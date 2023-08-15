@@ -12,13 +12,14 @@ jobs:
       packages: write
     steps:
       - name: Determine version of latest upstream release
+        id: upstream-latest-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
           latest_version=$(gh release view \
            --repo ironsheep/RPi-Reporter-MQTT2HA-Daemon \
            --json tagName --jq '.|to_entries[]|.value')
-          echo "LATEST_VERSION=$latest_version" >> $GITHUB_ENV
+          echo "value=$latest_version" >> "$GITHUB_OUTPUT"
 
       - name: Checkout the code
         uses: actions/checkout@v3
@@ -37,22 +38,25 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Prepare repository name for Github Container Registry
+        id: ghcr-repo-name
         # GHCR repository name should be lower case
         run: |-
           ghcr_repo=$(echo "${{ github.event.repository.name }}" \
             | tr "[[:upper:]]" "[[:lower:]]")
-          echo "GHCR_REPO=$ghcr_repo" >> $GITHUB_ENV
+          echo "value=$ghcr_repo" >> "$GITHUB_OUTPUT"
+
       - name: Build and push images
         uses: docker/build-push-action@v4
         with:
           context: .
           build-args: |-
-            version=$LATEST_VERSION
+            version="${{ steps.upstream-latest-version.outputs.value }}"
           platforms: linux/arm/v7,linux/arm/v6,linux/arm64,linux/amd64
           push: true
           tags:
             "ghcr.io/${{ github.repository_owner }}\
-            /$GHCR_REPO:latest
+            /${{ steps.ghcr-repo-name.outputs.value }}:latest
 
             ghcr.io/${{ github.repository_owner }}\
-            /$GHCR_REPO:$LATEST_VERSION"
+            /${{ steps.ghcr-repo-name.outputs.value }}\
+            :${{ steps.upstream-latest-version.outputs.value }}"
