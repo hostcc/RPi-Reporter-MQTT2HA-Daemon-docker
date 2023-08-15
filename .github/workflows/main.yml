@@ -14,9 +14,9 @@ jobs:
       - name: Determine version of latest upstream release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >-
-          latest_version=$(gh release view
-           --repo ironsheep/RPi-Reporter-MQTT2HA-Daemon
+        run: |-
+          latest_version=$(gh release view \
+           --repo ironsheep/RPi-Reporter-MQTT2HA-Daemon \
            --json tagName --jq '.|to_entries[]|.value')
           echo "LATEST_VERSION=$latest_version" >> $GITHUB_ENV
 
