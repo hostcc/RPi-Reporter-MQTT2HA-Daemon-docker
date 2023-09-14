@@ -1,7 +1,17 @@
 ---
 name: main
 
-on: push
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: >-
+          Upstream version to build container for (object SHA is also
+          accepted), defaults to latest release
+        required: true
+        default: 'latest-release'
+        type: string
 
 jobs:
   docker-publish:
@@ -12,7 +22,8 @@ jobs:
       packages: write
     steps:
       - name: Determine version of latest upstream release
-        id: upstream-latest-version
+        id: upstream-version
+        if: inputs.version == 'latest-release'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
@@ -20,6 +31,11 @@ jobs:
            --repo ironsheep/RPi-Reporter-MQTT2HA-Daemon \
            --json tagName --jq '.|to_entries[]|.value')
           echo "value=$latest_version" >> "$GITHUB_OUTPUT"
+
+      - name: Use provided upstream version
+        id: upstream-version
+        if: inputs.version != 'latest-release'
+          echo "value=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout the code
         uses: actions/checkout@v3
@@ -50,7 +66,7 @@ jobs:
         with:
           context: .
           build-args: |-
-            version=${{ steps.upstream-latest-version.outputs.value }}
+            version=${{ steps.upstream-version.outputs.value }}
           platforms: linux/arm/v7,linux/arm/v6,linux/arm64
           push: true
           tags:
@@ -59,4 +75,4 @@ jobs:
 
             ghcr.io/${{ github.repository_owner }}\
             /${{ steps.ghcr-repo-name.outputs.value }}\
-            :${{ steps.upstream-latest-version.outputs.value }}"
+            :${{ steps.upstream-version.outputs.value }}"
