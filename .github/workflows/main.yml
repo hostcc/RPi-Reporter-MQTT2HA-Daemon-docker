@@ -35,6 +35,7 @@ jobs:
       - name: Use provided upstream version
         id: upstream-version
         if: inputs.version != 'latest-release'
+        run: |-
           echo "value=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout the code
