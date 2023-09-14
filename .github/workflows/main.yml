@@ -9,8 +9,7 @@ on:
         description: >-
           Upstream version to build container for (object SHA is also
           accepted), defaults to latest release
-        required: true
-        default: 'latest-release'
+        required: false
         type: string
 
 jobs:
@@ -26,7 +25,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
-          if test "${{ inputs.version }}" = 'latest-release'; then
+          if test -z "${{ inputs_version }}"; then
             latest_version=$(gh release view \
              --repo ironsheep/RPi-Reporter-MQTT2HA-Daemon \
              --json tagName --jq '.|to_entries[]|.value')
