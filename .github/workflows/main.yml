@@ -23,20 +23,17 @@ jobs:
     steps:
       - name: Determine version of latest upstream release
         id: upstream-version
-        if: inputs.version == 'latest-release'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
-          latest_version=$(gh release view \
-           --repo ironsheep/RPi-Reporter-MQTT2HA-Daemon \
-           --json tagName --jq '.|to_entries[]|.value')
+          if test "${{ inputs.version }}" = 'latest-release'; then
+            latest_version=$(gh release view \
+             --repo ironsheep/RPi-Reporter-MQTT2HA-Daemon \
+             --json tagName --jq '.|to_entries[]|.value')
+          else
+            latest_version="${{ inputs.version }}"
+          fi
           echo "value=$latest_version" >> "$GITHUB_OUTPUT"
-
-      - name: Use provided upstream version
-        id: upstream-version
-        if: inputs.version != 'latest-release'
-        run: |-
-          echo "value=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout the code
         uses: actions/checkout@v3
