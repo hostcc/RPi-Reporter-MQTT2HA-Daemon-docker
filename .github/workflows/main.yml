@@ -25,7 +25,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
-          if test -z "${{ inputs_version }}"; then
+          if test -z "${{ inputs.version }}"; then
             latest_version=$(gh release view \
              --repo ironsheep/RPi-Reporter-MQTT2HA-Daemon \
              --json tagName --jq '.|to_entries[]|.value')
