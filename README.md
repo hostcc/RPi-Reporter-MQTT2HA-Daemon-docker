@@ -65,3 +65,8 @@ Key options explained:
 * `--hostname <hostname sent to Home Assistant>` is needed to make the MQTT
   discovered device be named in a meaningful manner - host name would be
   container ID rather
+
+If you rely on accurate network information the daemon provides to Home
+Assistant you might want to add `--network host` option when running the
+container, so that the daemon has access to host networking (as opposed to
+container networking that is typically separated from host).
