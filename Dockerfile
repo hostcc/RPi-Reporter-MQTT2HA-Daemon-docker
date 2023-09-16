@@ -1,14 +1,26 @@
+# Stage to build Python `apt` package for Alpine
+FROM python:3.10-alpine as builder
+ARG PYTHON_APT_VERSION=2.5.3
+WORKDIR /build
+
+RUN apk -U add gettext-dev apt-dev python3-dev gcc g++
+RUN env && pip wheel \
+	https://salsa.debian.org/apt-team/python-apt/-/archive/${PYTHON_APT_VERSION}/python-apt-${PYTHON_APT_VERSION}.tar.gz
+
 FROM python:3.10-alpine
+ARG DAEMON_VERSION=master
 
-ARG version
-
-RUN \
-	# For `vcgencmd`
+# Final stage
+RUN --mount=type=bind,from=builder,source=/build,target=/build \
+	# For APT packages support, installs package built in the previous stage
+	pip install /build/python_apt-*.whl && \
+	apk -U add dpkg apt-libs && \
+	# For temperatures/throttling support (via `vcgencmd`)
 	apk -U add raspberrypi-userland && \
 	wget \
-		https://raw.githubusercontent.com/ironsheep/RPi-Reporter-MQTT2HA-Daemon/${version}/ISP-RPi-mqtt-daemon.py \
+		https://raw.githubusercontent.com/ironsheep/RPi-Reporter-MQTT2HA-Daemon/${DAEMON_VERSION}/ISP-RPi-mqtt-daemon.py \
 		-O /usr/local/bin/rpi-mqtt-daemon && \
-	pip install -r https://raw.githubusercontent.com/ironsheep/RPi-Reporter-MQTT2HA-Daemon/${version}/requirements.txt && \
+	pip install -r https://raw.githubusercontent.com/ironsheep/RPi-Reporter-MQTT2HA-Daemon/${DAEMON_VERSION}/requirements.txt && \
 	chmod +x /usr/local/bin/rpi-mqtt-daemon
 
 USER nobody	
