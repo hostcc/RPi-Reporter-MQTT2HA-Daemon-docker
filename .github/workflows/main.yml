@@ -20,16 +20,18 @@ jobs:
       contents: read
       packages: write
     steps:
-      - name: Determine version of latest upstream release
+      - name: Determine upstream version
         id: upstream-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
           if test -z "${{ inputs.version }}"; then
+            # Pick version from latest release
             latest_version=$(gh release view \
              --repo ironsheep/RPi-Reporter-MQTT2HA-Daemon \
              --json tagName --jq '.|to_entries[]|.value')
           else
+            # Pick user supplied version
             latest_version="${{ inputs.version }}"
           fi
           echo "value=$latest_version" >> "$GITHUB_OUTPUT"
@@ -63,7 +65,7 @@ jobs:
         with:
           context: .
           build-args: |-
-            version=${{ steps.upstream-version.outputs.value }}
+            DAEMON_VERSION=${{ steps.upstream-version.outputs.value }}
           platforms: linux/arm/v7,linux/arm/v6,linux/arm64
           push: true
           tags:
