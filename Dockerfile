@@ -12,6 +12,8 @@ ARG DAEMON_VERSION=master
 
 # Final stage
 RUN --mount=type=bind,from=builder,source=/build,target=/build \
+	# Needed by recent versions of `RPi-Reporter-MQTT2HA-Daemon`
+	apk -U add bash && \
 	# For APT packages support, installs package built in the previous stage
 	pip install /build/python_apt-*.whl && \
 	apk -U add dpkg apt-libs && \
