@@ -1,5 +1,5 @@
 # Stage to build Python `apt` package for Alpine
-FROM python:3.13.0b1-alpine as builder
+FROM python:3.14.0a4-alpine as builder
 ARG PYTHON_APT_VERSION=2.5.3
 WORKDIR /build
 
@@ -7,7 +7,7 @@ RUN apk -U add gettext-dev apt-dev python3-dev gcc g++
 RUN env && pip wheel \
 	https://salsa.debian.org/apt-team/python-apt/-/archive/${PYTHON_APT_VERSION}/python-apt-${PYTHON_APT_VERSION}.tar.gz
 
-FROM python:3.13.0b1-alpine
+FROM python:3.14.0a4-alpine
 ARG DAEMON_VERSION=master
 
 # Final stage
