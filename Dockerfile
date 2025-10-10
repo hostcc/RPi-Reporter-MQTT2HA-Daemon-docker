@@ -9,7 +9,7 @@ WORKDIR /build
 
 RUN apk -U add gettext-dev apt-dev python3-dev gcc g++
 # Recent `python-apt` versions require `DEBVER` environment variable to avoid
-# calling into `dpkg-parsechangelog`, which apparently does not exists on
+# calling into `dpkg-parsechangelog`, which apparently does not exist on
 # Alpine
 RUN DEBVER=${PYTHON_APT_VERSION} pip wheel \
 	https://salsa.debian.org/apt-team/python-apt/-/archive/${PYTHON_APT_VERSION}/python-apt-${PYTHON_APT_VERSION}.tar.gz
