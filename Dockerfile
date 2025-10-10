@@ -1,16 +1,23 @@
+ARG PYTHON_APT_VERSION=2.9.9
+ARG PYTHON_VERSION=3.14.0
+ARG DAEMON_VERSION=master
+
 # Stage to build Python `apt` package for Alpine
-FROM python:3.13.5-alpine as builder
-ARG PYTHON_APT_VERSION=2.5.3
+FROM python:${PYTHON_VERSION}-alpine AS builder
+ARG PYTHON_APT_VERSION
 WORKDIR /build
 
 RUN apk -U add gettext-dev apt-dev python3-dev gcc g++
-RUN env && pip wheel \
+# Recent `python-apt` versions require `DEBVER` environment variable to avoid
+# calling into `dpkg-parsechangelog`, which apparently does not exists on
+# Alpine
+RUN DEBVER=${PYTHON_APT_VERSION} pip wheel \
 	https://salsa.debian.org/apt-team/python-apt/-/archive/${PYTHON_APT_VERSION}/python-apt-${PYTHON_APT_VERSION}.tar.gz
 
-FROM python:3.13.5-alpine
-ARG DAEMON_VERSION=master
-
 # Final stage
+FROM python:${PYTHON_VERSION}-alpine
+ARG DAEMON_VERSION
+
 RUN --mount=type=bind,from=builder,source=/build,target=/build \
 	# Needed by recent versions of `RPi-Reporter-MQTT2HA-Daemon`
 	apk -U add bash && \
